@@ -43,6 +43,8 @@ interface OverviewProps {
 
 const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('30days');
+  const [performanceTimeRange, setPerformanceTimeRange] = useState('6M');
+  const [attendanceTimeRange, setAttendanceTimeRange] = useState('1M');
   const [showQuickActions, setShowQuickActions] = useState(true);
   const [animatedValues, setAnimatedValues] = useState({
     totalEmployees: 0,
@@ -91,40 +93,99 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
   const todayAbsent = recentAttendance[recentAttendance.length - 1]?.absent || 0;
   const todayLate = recentAttendance[recentAttendance.length - 1]?.late || 0;
 
-  // Performance trend data with multiple datasets
-  const performanceTrendData = mockPerformanceData.slice(-6).map(item => ({
-    label: item.month,
-    value: item.score
-  }));
+  // Filter data based on time range
+  const filterDataByTimeRange = (data: any[], timeRange: string) => {
+    const now = new Date();
+    let startDate = new Date();
+    
+    switch (timeRange) {
+      case '1D':
+        startDate.setDate(now.getDate() - 1);
+        break;
+      case '1W':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case '1M':
+        startDate.setMonth(now.getMonth() - 1);
+        break;
+      case '3M':
+        startDate.setMonth(now.getMonth() - 3);
+        break;
+      case '6M':
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case '1Y':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        return data;
+    }
+    
+    return data; // For demo purposes, return all data
+  };
 
-  // Employee growth data (simulated)
-  const employeeGrowthData = [
-    { label: 'Jan', value: totalEmployees - 50 },
-    { label: 'Feb', value: totalEmployees - 42 },
-    { label: 'Mar', value: totalEmployees - 35 },
-    { label: 'Apr', value: totalEmployees - 28 },
-    { label: 'May', value: totalEmployees - 15 },
-    { label: 'Jun', value: totalEmployees }
-  ];
+  // Performance trend data with enhanced formatting
+  const performanceTrendData = filterDataByTimeRange(mockPerformanceData, performanceTimeRange)
+    .slice(-12)
+    .map((item, index) => ({
+      label: item.month,
+      value: item.score,
+      date: `2024-${String(index + 1).padStart(2, '0')}-01`,
+      performance: item.score,
+      target: 85 // Target performance score
+    }));
+  // Attendance trend data with enhanced formatting
+  const attendanceTrendData = filterDataByTimeRange(recentAttendance, attendanceTimeRange)
+    .slice(-30)
+    .map((item, index) => ({
+      label: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      value: Math.round((item.present / (item.present + item.absent)) * 100),
+      date: item.date,
+      attendance: Math.round((item.present / (item.present + item.absent)) * 100),
+      present: item.present,
+      absent: item.absent,
+      late: item.late
+    }));
 
   // Multi-line chart data for advanced analytics
   const multiLineChartData = [
     {
-      label: 'Performance',
+      label: 'Performance Score',
       data: performanceTrendData,
       color: '#6366f1',
       fillOpacity: 0.1
     },
     {
-      label: 'Attendance',
-      data: recentAttendance.slice(-6).map((item, index) => ({
-        label: performanceTrendData[index]?.label || `M${index + 1}`,
-        value: Math.round((item.present / (item.present + item.absent)) * 100)
+      label: 'Target Score',
+      data: performanceTrendData.map(item => ({
+        label: item.label,
+        value: 85,
+        date: item.date
       })),
       color: '#8b5cf6',
       fillOpacity: 0.1
     }
   ];
+
+  // Format currency values
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  // Format percentage values
+  const formatPercentage = (value: number) => {
+    return `${value}%`;
+  };
+
+  // Format performance score
+  const formatScore = (value: number) => {
+    return `${value.toFixed(1)}`;
+  };
 
   // Department breakdown with enhanced data
   const departmentBreakdown = mockEmployees.reduce((acc, emp) => {
@@ -445,97 +506,120 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <BarChart3 className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-indigo-900 font-poppins">Performance Analytics</h3>
-                <p className="text-indigo-600 font-poppins">Multi-dimensional insights</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-2 px-3 py-1 bg-indigo-100 rounded-full">
-                <div className="w-3 h-3 bg-indigo-600 rounded-full"></div>
-                <span className="text-xs font-medium text-indigo-700">Performance</span>
-              </div>
-              <div className="flex items-center space-x-2 px-3 py-1 bg-purple-100 rounded-full">
-                <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
-                <span className="text-xs font-medium text-purple-700">Attendance</span>
+                <h3 className="text-xl font-bold text-indigo-900 font-poppins">Performance Trends</h3>
+                <p className="text-indigo-600 font-poppins">Real-time performance tracking</p>
               </div>
             </div>
           </div>
-          <Chart datasets={multiLineChartData} type="line" height={300} />
+          <Chart 
+            datasets={multiLineChartData} 
+            type="area" 
+            height={350}
+            showTimeRange={true}
+            timeRange={performanceTimeRange}
+            onTimeRangeChange={setPerformanceTimeRange}
+            formatValue={formatScore}
+            showLegend={true}
+            interactive={true}
+          />
           <div className="mt-6 grid grid-cols-2 gap-4">
             <div className="text-center p-4 bg-gradient-to-br from-indigo-50 to-blue-100 rounded-2xl">
               <div className="text-2xl font-bold text-indigo-800 font-poppins">{avgPerformance.toFixed(1)}</div>
               <div className="text-sm text-indigo-600 font-poppins">Avg Performance</div>
             </div>
             <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl">
-              <div className="text-2xl font-bold text-purple-800 font-poppins">{Math.round(avgAttendance)}%</div>
-              <div className="text-sm text-purple-600 font-poppins">Avg Attendance</div>
+              <div className="text-2xl font-bold text-purple-800 font-poppins">85.0</div>
+              <div className="text-sm text-purple-600 font-poppins">Target Score</div>
             </div>
           </div>
         </div>
 
-        {/* Department Matrix */}
+        {/* Attendance Analytics */}
         <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-3xl p-8 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-gradient-to-br from-slate-600 to-gray-700 rounded-2xl shadow-lg">
-                <PieChart className="h-6 w-6 text-white" />
+                <Calendar className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900 font-poppins">Department Matrix</h3>
-                <p className="text-slate-600 font-poppins">Performance & headcount analysis</p>
+                <h3 className="text-xl font-bold text-slate-900 font-poppins">Attendance Analytics</h3>
+                <p className="text-slate-600 font-poppins">Daily attendance patterns</p>
               </div>
             </div>
-            <button 
-              onClick={() => handleQuickAction('view-employees', 'employees')}
-              className="text-slate-600 hover:text-slate-800 font-medium flex items-center space-x-1"
-            >
-              <span>View All</span>
-              <ChevronRight className="h-4 w-4" />
-            </button>
           </div>
           
-          <div className="space-y-4">
-            {departmentData.slice(0, 6).map((dept, index) => (
-              <div key={dept.label} className="group">
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-white to-slate-50 border border-slate-200 rounded-2xl hover:border-indigo-300 hover:shadow-md transition-all duration-200">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 rounded-2xl shadow-sm" style={{ backgroundColor: `${getDepartmentColor(index)}20` }}>
-                      <Building className="h-5 w-5" style={{ color: getDepartmentColor(index) }} />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-slate-900 font-poppins">{dept.label}</div>
-                      <div className="text-sm text-slate-600 font-poppins">{dept.value} employees</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-6">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-slate-900 font-poppins">{dept.performance.toFixed(1)}</div>
-                      <div className="text-xs text-slate-500 font-poppins">Performance</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-slate-900 font-poppins">${Math.round(dept.salary / 1000)}K</div>
-                      <div className="text-xs text-slate-500 font-poppins">Avg Salary</div>
-                    </div>
-                    <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ 
-                          width: `${(dept.performance / 5) * 100}%`,
-                          backgroundColor: getDepartmentColor(index)
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <Chart 
+            data={attendanceTrendData} 
+            type="area" 
+            height={350}
+            color="#22c55e"
+            showTimeRange={true}
+            timeRange={attendanceTimeRange}
+            onTimeRangeChange={setAttendanceTimeRange}
+            formatValue={formatPercentage}
+            interactive={true}
+          />
+          
+          <div className="mt-6 grid grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-teal-100 rounded-2xl">
+              <div className="text-xl font-bold text-emerald-800 font-poppins">{Math.round(avgAttendance)}%</div>
+              <div className="text-xs text-emerald-600 font-poppins">Avg Rate</div>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl">
+              <div className="text-xl font-bold text-blue-800 font-poppins">{todayPresent}</div>
+              <div className="text-xs text-blue-600 font-poppins">Present Today</div>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl">
+              <div className="text-xl font-bold text-amber-800 font-poppins">{todayLate}</div>
+              <div className="text-xs text-amber-600 font-poppins">Late Today</div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Bottom Section with Beautiful Cards */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* Department Performance Chart */}
+        <div className="bg-gradient-to-br from-white to-purple-50 border border-purple-200 rounded-3xl p-8 shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg">
+                <Building className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-purple-900 font-poppins">Department Performance</h3>
+                <p className="text-purple-600 font-poppins">Comparative analysis</p>
+              </div>
+            </div>
+          </div>
+          
+          <Chart 
+            data={departmentData.map(dept => ({
+              label: dept.label.substring(0, 3),
+              value: dept.performance,
+              department: dept.label,
+              employees: dept.value
+            }))} 
+            type="bar" 
+            height={300}
+            color="#a855f7"
+            formatValue={formatScore}
+            interactive={true}
+          />
+          
+          <div className="mt-4 space-y-2">
+            {departmentData.slice(0, 3).map((dept, index) => (
+              <div key={dept.label} className="flex items-center justify-between text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDepartmentColor(index) }}></div>
+                  <span className="text-gray-700 font-poppins">{dept.label}</span>
+                </div>
+                <span className="font-bold text-gray-900 font-poppins">{dept.performance.toFixed(1)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Top Performers */}
         <div className="bg-gradient-to-br from-white to-emerald-50 border border-emerald-200 rounded-3xl p-8 shadow-lg">
           <div className="flex items-center justify-between mb-6">
@@ -579,112 +663,46 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
           </div>
         </div>
 
-        {/* Recent Hires */}
-        <div className="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-3xl p-8 shadow-lg">
+        {/* Payroll Analytics */}
+        <div className="bg-gradient-to-br from-white to-amber-50 border border-amber-200 rounded-3xl p-8 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
-                <Zap className="h-6 w-6 text-white" />
+              <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-lg">
+                <DollarSign className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-blue-900 font-poppins">New Talent</h3>
-                <p className="text-blue-600 font-poppins">Recent additions</p>
+                <h3 className="text-xl font-bold text-amber-900 font-poppins">Payroll Trends</h3>
+                <p className="text-amber-600 font-poppins">Monthly expenses</p>
               </div>
             </div>
           </div>
           
-          <div className="space-y-4">
-            {recentHires.map((employee) => (
-              <div key={employee.id} className="flex items-center space-x-4 p-4 bg-gradient-to-r from-white to-blue-50 border border-blue-200 rounded-2xl hover:border-blue-300 hover:shadow-md transition-all duration-200">
-                <div className="relative">
-                  <img
-                    src={employee.avatar}
-                    alt={employee.name}
-                    className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-200"
-                  />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-900 truncate font-poppins">{employee.name}</div>
-                  <div className="text-sm text-blue-600 truncate font-poppins">{employee.role}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-blue-700 font-poppins">
-                    {new Date(employee.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </div>
-                  <div className="text-xs text-blue-500 font-poppins">{employee.department}</div>
-                </div>
-              </div>
-            ))}
+          <Chart 
+            data={departmentData.map(dept => ({
+              label: dept.label.substring(0, 3),
+              value: Math.round(dept.salary / 1000),
+              department: dept.label,
+              totalSalary: dept.salary * dept.value
+            }))} 
+            type="bar" 
+            height={300}
+            color="#f59e0b"
+            formatValue={(value) => `$${value}K`}
+            interactive={true}
+          />
+          
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl">
+              <div className="text-xl font-bold text-amber-800 font-poppins">{formatCurrency(totalPayroll / 12)}</div>
+              <div className="text-xs text-amber-600 font-poppins">Monthly Total</div>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl">
+              <div className="text-xl font-bold text-green-800 font-poppins">{formatCurrency(totalPayroll / totalEmployees)}</div>
+              <div className="text-xs text-green-600 font-poppins">Avg Salary</div>
+            </div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-gradient-to-br from-white to-purple-50 border border-purple-200 rounded-3xl p-8 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg">
-                <Settings className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-purple-900 font-poppins">Quick Actions</h3>
-                <p className="text-purple-600 font-poppins">Essential operations</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            <button 
-              onClick={() => handleQuickAction('add-employee')}
-              className="w-full bg-gradient-to-r from-blue-50 to-indigo-100 hover:from-blue-100 hover:to-indigo-200 border-2 border-dashed border-blue-300 hover:border-blue-400 rounded-2xl p-4 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-                  <Users className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-medium text-blue-800">Add New Employee</span>
-              </div>
-            </button>
-            
-            <button 
-              onClick={() => handleQuickAction('process-payroll')}
-              className="w-full bg-gradient-to-r from-emerald-50 to-teal-100 hover:from-emerald-100 hover:to-teal-200 border-2 border-dashed border-emerald-300 hover:border-emerald-400 rounded-2xl p-4 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg">
-                  <DollarSign className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-medium text-emerald-800">Process Payroll</span>
-              </div>
-            </button>
-            
-            <button 
-              onClick={() => handleQuickAction('generate-report')}
-              className="w-full bg-gradient-to-r from-amber-50 to-orange-100 hover:from-amber-100 hover:to-orange-200 border-2 border-dashed border-amber-300 hover:border-amber-400 rounded-2xl p-4 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
-                  <Download className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-medium text-amber-800">Generate Report</span>
-              </div>
-            </button>
-            
-            <button 
-              onClick={() => handleQuickAction('view-training', 'training')}
-              className="w-full bg-gradient-to-r from-purple-50 to-pink-100 hover:from-purple-100 hover:to-pink-200 border-2 border-dashed border-purple-300 hover:border-purple-400 rounded-2xl p-4 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
-                  <GraduationCap className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-medium text-purple-800">View Training</span>
-              </div>
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Beautiful Alerts Section */}

@@ -33,6 +33,15 @@ export default {
           800: '#1e293b',
           900: '#0f172a',
         },
+        // Add semantic color variables for charts
+        chart: {
+          primary: 'var(--color-primary)',
+          secondary: 'var(--color-secondary)',
+          success: 'var(--color-success)',
+          warning: 'var(--color-warning)',
+          error: 'var(--color-error)',
+          info: 'var(--color-info)',
+        }
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

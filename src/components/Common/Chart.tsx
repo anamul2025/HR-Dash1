@@ -1,8 +1,24 @@
 import React from 'react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Area,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  Legend
+} from 'recharts';
 
 interface ChartDataPoint {
   label: string;
   value: number;
+  date?: string;
+  [key: string]: any;
 }
 
 interface ChartDataset {
@@ -13,14 +29,98 @@ interface ChartDataset {
 }
 
 interface ChartProps {
-  data?: Array<{ label: string; value: number }>; // Keep for backward compatibility
+  data?: Array<{ label: string; value: number; date?: string; [key: string]: any }>; // Keep for backward compatibility
   datasets?: ChartDataset[]; // New prop for multi-line charts
-  type: 'bar' | 'line' | 'pie';
+  type: 'bar' | 'line' | 'area';
   height?: number;
   color?: string;
+  showTimeRange?: boolean;
+  timeRange?: string;
+  onTimeRangeChange?: (range: string) => void;
+  formatValue?: (value: number) => string;
+  showLegend?: boolean;
+  interactive?: boolean;
 }
 
-const Chart: React.FC<ChartProps> = ({ data, datasets, type, height = 300, color = '#3B82F6' }) => {
+// Custom Tooltip Component
+const CustomTooltip = ({ active, payload, label, formatValue }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4 backdrop-blur-sm">
+        <div className="border-b border-gray-100 pb-2 mb-3">
+          <p className="text-sm font-semibold text-gray-900">{label}</p>
+          {payload[0]?.payload?.date && (
+            <p className="text-xs text-gray-500">{payload[0].payload.date}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between space-x-4">
+              <div className="flex items-center space-x-2">
+                <div 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  {entry.dataKey === 'value' ? entry.payload.label || 'Value' : entry.dataKey}
+                </span>
+              </div>
+              <span className="text-sm font-bold text-gray-900">
+                {formatValue ? formatValue(entry.value) : entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Time Range Selector Component
+const TimeRangeSelector = ({ timeRange, onTimeRangeChange }: { timeRange: string; onTimeRangeChange: (range: string) => void }) => {
+  const ranges = [
+    { id: '1D', label: '1D' },
+    { id: '1W', label: '1W' },
+    { id: '1M', label: '1M' },
+    { id: '3M', label: '3M' },
+    { id: '6M', label: '6M' },
+    { id: '1Y', label: '1Y' },
+    { id: 'ALL', label: 'ALL' }
+  ];
+
+  return (
+    <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+      {ranges.map((range) => (
+        <button
+          key={range.id}
+          onClick={() => onTimeRangeChange(range.id)}
+          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
+            timeRange === range.id
+              ? 'bg-white text-blue-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          }`}
+        >
+          {range.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+const Chart: React.FC<ChartProps> = ({ 
+  data, 
+  datasets, 
+  type, 
+  height = 300, 
+  color = '#3b82f6',
+  showTimeRange = false,
+  timeRange = '1M',
+  onTimeRangeChange,
+  formatValue,
+  showLegend = false,
+  interactive = true
+}) => {
   // Use datasets if provided, otherwise convert single data to datasets format
   const chartDatasets = datasets || (data ? [{
     label: 'Data',
@@ -37,220 +137,174 @@ const Chart: React.FC<ChartProps> = ({ data, datasets, type, height = 300, color
     );
   }
 
-  // Calculate max value across all datasets
-  const maxValue = Math.max(...chartDatasets.flatMap(dataset => dataset.data.map(item => item.value)));
-  if (maxValue === 0) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
-        <p className="text-gray-500">No data to display</p>
-      </div>
-    );
-  }
-  
-  const padding = 50;
-  const chartWidth = Math.max(400, (chartDatasets[0]?.data.length || 0) * 80); // Dynamic width based on data points
-  const chartHeight = height - padding * 2;
+  // Prepare data for Recharts (combine all datasets into single data points)
+  const chartData = chartDatasets[0].data.map((point, index) => {
+    const dataPoint: any = {
+      label: point.label,
+      date: point.date,
+    };
+    
+    chartDatasets.forEach((dataset, datasetIndex) => {
+      const value = dataset.data[index]?.value || 0;
+      dataPoint[dataset.label] = value;
+      if (datasetIndex === 0) {
+        dataPoint.value = value; // Keep backward compatibility
+      }
+    });
+    
+    return dataPoint;
+  });
 
-  const renderBarChart = () => {
-    const singleDataset = chartDatasets[0];
-    if (!singleDataset) return null;
+  // Calculate domain for Y-axis with padding
+  const allValues = chartData.flatMap(item => 
+    chartDatasets.map(dataset => item[dataset.label] || 0)
+  );
+  const minValue = Math.min(...allValues);
+  const maxValue = Math.max(...allValues);
+  const padding = (maxValue - minValue) * 0.1;
+  const yAxisDomain = [
+    Math.max(0, minValue - padding),
+    maxValue + padding
+  ];
 
-    const barWidth = Math.max(20, Math.min(60, (chartWidth - padding * 2) / singleDataset.data.length - 10));
+  const renderAreaChart = () => (
+    <ResponsiveContainer width="100%" height={height}>
+      <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+        <defs>
+          {chartDatasets.map((dataset, index) => (
+            <linearGradient key={index} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={dataset.color} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={dataset.color} stopOpacity={0.05} />
+            </linearGradient>
+          ))}
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+        <XAxis 
+          dataKey="label" 
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 12, fill: '#64748b' }}
+          dy={10}
+        />
+        <YAxis 
+          domain={yAxisDomain}
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 12, fill: '#64748b' }}
+          tickFormatter={(value) => formatValue ? formatValue(value) : value.toString()}
+        />
+        {interactive && (
+          <Tooltip 
+            content={<CustomTooltip formatValue={formatValue} />}
+            cursor={{ stroke: '#e2e8f0', strokeWidth: 1 }}
+          />
+        )}
+        {showLegend && <Legend />}
+        {chartDatasets.map((dataset, index) => (
+          <Area
+            key={index}
+            type="monotone"
+            dataKey={dataset.label}
+            stroke={dataset.color}
+            strokeWidth={2.5}
+            fill={`url(#gradient-${index})`}
+            dot={{ fill: dataset.color, strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, stroke: dataset.color, strokeWidth: 2, fill: '#fff' }}
+          />
+        ))}
+      </AreaChart>
+    </ResponsiveContainer>
+  );
 
-    return (
-      <div className="w-full overflow-x-auto">
-        <svg 
-          width={chartWidth} 
-          height={height} 
-          viewBox={`0 0 ${chartWidth} ${height}`} 
-          className="min-w-full"
-          preserveAspectRatio="xMidYMid meet"
-        >
-          {/* Grid lines */}
-          {[0, 25, 50, 75, 100].map((percent) => {
-            const y = padding + (chartHeight * (1 - percent / 100));
-            return (
-              <g key={percent}>
-                <line
-                  x1={padding}
-                  y1={y}
-                  x2={chartWidth - padding}
-                  y2={y}
-                  stroke="#E5E7EB"
-                  strokeWidth="1"
-                />
-                <text
-                  x={padding - 10}
-                  y={y + 4}
-                  textAnchor="end"
-                  className="text-xs fill-gray-500"
-                  fontSize="12"
-                >
-                  {Math.round((maxValue * percent) / 100)}
-                </text>
-              </g>
-            );
-          })}
+  const renderLineChart = () => (
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+        <XAxis 
+          dataKey="label" 
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 12, fill: '#64748b' }}
+          dy={10}
+        />
+        <YAxis 
+          domain={yAxisDomain}
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 12, fill: '#64748b' }}
+          tickFormatter={(value) => formatValue ? formatValue(value) : value.toString()}
+        />
+        {interactive && (
+          <Tooltip 
+            content={<CustomTooltip formatValue={formatValue} />}
+            cursor={{ stroke: '#e2e8f0', strokeWidth: 1 }}
+          />
+        )}
+        {showLegend && <Legend />}
+        {chartDatasets.map((dataset, index) => (
+          <Line
+            key={index}
+            type="monotone"
+            dataKey={dataset.label}
+            stroke={dataset.color}
+            strokeWidth={2.5}
+            dot={{ fill: dataset.color, strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, stroke: dataset.color, strokeWidth: 2, fill: '#fff' }}
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  );
 
-          {/* Bars */}
-          {singleDataset.data.map((item, index) => {
-            const x = padding + index * (barWidth + 10) + 5;
-            const barHeight = maxValue > 0 ? (item.value / maxValue) * chartHeight : 0;
-            const y = padding + chartHeight - barHeight;
-
-            return (
-              <g key={index}>
-                <rect
-                  x={x}
-                  y={y}
-                  width={barWidth}
-                  height={barHeight}
-                  fill={singleDataset.color}
-                  className="hover:opacity-80 transition-opacity cursor-pointer"
-                  rx="2"
-                />
-                <text
-                  x={x + barWidth / 2}
-                  y={height - 15}
-                  textAnchor="middle"
-                  className="text-xs fill-gray-600"
-                  fontSize="11"
-                >
-                  {item.label}
-                </text>
-                <text
-                  x={x + barWidth / 2}
-                  y={y - 5}
-                  textAnchor="middle"
-                  className="text-xs fill-gray-700 font-medium"
-                  fontSize="11"
-                >
-                  {item.value}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-    );
-  };
-
-  const renderLineChart = () => {
-    if (!chartDatasets[0]) return null;
-
-    const dataLength = chartDatasets[0].data.length;
-    const pointSpacing = (chartWidth - padding * 2) / Math.max(1, dataLength - 1);
-
-    return (
-      <div className="w-full overflow-x-auto">
-        <svg 
-          width={chartWidth} 
-          height={height} 
-          viewBox={`0 0 ${chartWidth} ${height}`} 
-          className="min-w-full"
-          preserveAspectRatio="xMidYMid meet"
-        >
-          {/* Grid lines */}
-          {[0, 25, 50, 75, 100].map((percent) => {
-            const y = padding + (chartHeight * (1 - percent / 100));
-            return (
-              <g key={percent}>
-                <line
-                  x1={padding}
-                  y1={y}
-                  x2={chartWidth - padding}
-                  y2={y}
-                  stroke="#F3F4F6"
-                  strokeWidth="1"
-                />
-                <text
-                  x={padding - 10}
-                  y={y + 4}
-                  textAnchor="end"
-                  className="text-xs fill-gray-400"
-                  fontSize="11"
-                >
-                  {Math.round((maxValue * percent) / 100)}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Render each dataset */}
-          {chartDatasets.map((dataset, datasetIndex) => {
-            const points = dataset.data.map((item, index) => ({
-              x: padding + (dataLength === 1 ? (chartWidth - padding * 2) / 2 : index * pointSpacing),
-              y: padding + chartHeight - (maxValue > 0 ? (item.value / maxValue) * chartHeight : 0)
-            }));
-
-            const pathData = points.map((point, index) => 
-              `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
-            ).join(' ');
-
-            return (
-              <g key={datasetIndex}>
-                {/* Area under the line */}
-                {points.length > 1 && (
-                  <path
-                    d={`${pathData} L ${points[points.length - 1].x} ${padding + chartHeight} L ${points[0].x} ${padding + chartHeight} Z`}
-                    fill={dataset.color}
-                    fillOpacity={dataset.fillOpacity || 0.1}
-                  />
-                )}
-
-                {/* Line */}
-                {points.length > 1 && (
-                  <path
-                    d={pathData}
-                    fill="none"
-                    stroke={dataset.color}
-                    strokeWidth="2.5"
-                    className="drop-shadow-sm"
-                  />
-                )}
-
-                {/* Points */}
-                {points.map((point, index) => (
-                  <circle
-                    key={index}
-                    cx={point.x}
-                    cy={point.y}
-                    r="4"
-                    fill={dataset.color}
-                    className="hover:r-6 transition-all cursor-pointer drop-shadow-sm"
-                    stroke="white"
-                    strokeWidth="2"
-                  />
-                ))}
-              </g>
-            );
-          })}
-
-          {/* X-axis labels */}
-          {chartDatasets[0] && chartDatasets[0].data.map((item, index) => {
-            const x = padding + (dataLength === 1 ? (chartWidth - padding * 2) / 2 : index * pointSpacing);
-            return (
-              <text
-                key={index}
-                x={x}
-                y={height - 15}
-                textAnchor="middle"
-                className="text-xs fill-gray-600"
-                fontSize="11"
-              >
-                {item.label}
-              </text>
-            );
-          })}
-        </svg>
-      </div>
-    );
-  };
+  const renderBarChart = () => (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+        <XAxis 
+          dataKey="label" 
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 12, fill: '#64748b' }}
+          dy={10}
+        />
+        <YAxis 
+          domain={yAxisDomain}
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 12, fill: '#64748b' }}
+          tickFormatter={(value) => formatValue ? formatValue(value) : value.toString()}
+        />
+        {interactive && (
+          <Tooltip 
+            content={<CustomTooltip formatValue={formatValue} />}
+            cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+          />
+        )}
+        {showLegend && <Legend />}
+        {chartDatasets.map((dataset, index) => (
+          <Bar
+            key={index}
+            dataKey={dataset.label}
+            fill={dataset.color}
+            radius={[4, 4, 0, 0]}
+          />
+        ))}
+      </BarChart>
+    </ResponsiveContainer>
+  );
 
   return (
     <div className="bg-white rounded-lg overflow-hidden">
-      {type === 'bar' && renderBarChart()}
-      {type === 'line' && renderLineChart()}
+      {showTimeRange && onTimeRangeChange && (
+        <div className="flex justify-end p-4 border-b border-gray-100">
+          <TimeRangeSelector timeRange={timeRange} onTimeRangeChange={onTimeRangeChange} />
+        </div>
+      )}
+      <div className="p-4">
+        {type === 'area' && renderAreaChart()}
+        {type === 'line' && renderLineChart()}
+        {type === 'bar' && renderBarChart()}
+      </div>
     </div>
   );
 };
