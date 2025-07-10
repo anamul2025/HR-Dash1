@@ -137,8 +137,8 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setActiveSection }) => {
                     className="h-10 w-10 rounded-full object-cover"
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.role}</p>
+                    <p className="text-sm font-medium text-gray-900 font-poppins">{user.name}</p>
+                    <p className="text-xs text-gray-500 font-poppins">{user.role}</p>
                   </div>
                 </div>
               </div>

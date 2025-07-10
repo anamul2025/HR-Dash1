@@ -157,7 +157,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
               title={!isOpen ? 'Logout' : undefined}
             >
               <LogOut size={18} className="flex-shrink-0" />
-              {isOpen && <span className="font-medium text-sm lg:text-base">Logout</span>}
+              {isOpen && <span className="font-medium text-sm lg:text-base font-poppins">Logout</span>}
             </button>
           </div>
         </div>

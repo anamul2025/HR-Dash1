@@ -321,9 +321,9 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
             </div>
           </div>
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-emerald-700 uppercase tracking-wide">Attendance Rate</h3>
-            <p className="text-3xl font-bold text-emerald-900">{animatedValues.avgAttendance}%</p>
-            <p className="text-sm text-emerald-600">This month average</p>
+            <h3 className="text-sm font-semibold text-emerald-700 uppercase tracking-wide font-poppins">Attendance Rate</h3>
+            <p className="text-3xl font-bold text-emerald-900 font-poppins">{animatedValues.avgAttendance}%</p>
+            <p className="text-sm text-emerald-600 font-poppins">This month average</p>
           </div>
           <div className="mt-4 relative">
             <div className="w-full bg-emerald-200 rounded-full h-3">
@@ -349,9 +349,9 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
             </div>
           </div>
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-amber-700 uppercase tracking-wide">Monthly Payroll</h3>
-            <p className="text-3xl font-bold text-amber-900">${Math.round(animatedValues.totalPayroll / 1000)}K</p>
-            <p className="text-sm text-amber-600">Total monthly expenses</p>
+            <h3 className="text-sm font-semibold text-amber-700 uppercase tracking-wide font-poppins">Monthly Payroll</h3>
+            <p className="text-3xl font-bold text-amber-900 font-poppins">${Math.round(animatedValues.totalPayroll / 1000)}K</p>
+            <p className="text-sm text-amber-600 font-poppins">Total monthly expenses</p>
           </div>
           <div className="mt-4 flex items-center space-x-2 text-xs text-amber-600">
             <Shield className="h-4 w-4" />
@@ -368,8 +368,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
               <Activity className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-slate-900">Today's Activity</h3>
-              <p className="text-slate-600">Real-time workforce insights</p>
+              <h3 className="text-2xl font-bold text-slate-900 font-poppins">Today's Activity</h3>
+              <p className="text-slate-600 font-poppins">Real-time workforce insights</p>
             </div>
           </div>
           <button 
@@ -389,8 +389,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <UserCheck className="h-8 w-8 text-white" />
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-emerald-800">{todayPresent}</div>
-                <div className="text-sm text-emerald-600 font-medium">Present Today</div>
+                <div className="text-3xl font-bold text-emerald-800 font-poppins">{todayPresent}</div>
+                <div className="text-sm text-emerald-600 font-medium font-poppins">Present Today</div>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -406,8 +406,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <UserX className="h-8 w-8 text-white" />
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-red-800">{todayAbsent}</div>
-                <div className="text-sm text-red-600 font-medium">Absent Today</div>
+                <div className="text-3xl font-bold text-red-800 font-poppins">{todayAbsent}</div>
+                <div className="text-sm text-red-600 font-medium font-poppins">Absent Today</div>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -423,8 +423,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <Clock className="h-8 w-8 text-white" />
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-amber-800">{todayLate}</div>
-                <div className="text-sm text-amber-600 font-medium">Late Arrivals</div>
+                <div className="text-3xl font-bold text-amber-800 font-poppins">{todayLate}</div>
+                <div className="text-sm text-amber-600 font-medium font-poppins">Late Arrivals</div>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -445,8 +445,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <BarChart3 className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-indigo-900">Performance Analytics</h3>
-                <p className="text-indigo-600">Multi-dimensional insights</p>
+                <h3 className="text-xl font-bold text-indigo-900 font-poppins">Performance Analytics</h3>
+                <p className="text-indigo-600 font-poppins">Multi-dimensional insights</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -463,12 +463,12 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
           <Chart datasets={multiLineChartData} type="line" height={300} />
           <div className="mt-6 grid grid-cols-2 gap-4">
             <div className="text-center p-4 bg-gradient-to-br from-indigo-50 to-blue-100 rounded-2xl">
-              <div className="text-2xl font-bold text-indigo-800">{avgPerformance.toFixed(1)}</div>
-              <div className="text-sm text-indigo-600">Avg Performance</div>
+              <div className="text-2xl font-bold text-indigo-800 font-poppins">{avgPerformance.toFixed(1)}</div>
+              <div className="text-sm text-indigo-600 font-poppins">Avg Performance</div>
             </div>
             <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl">
-              <div className="text-2xl font-bold text-purple-800">{Math.round(avgAttendance)}%</div>
-              <div className="text-sm text-purple-600">Avg Attendance</div>
+              <div className="text-2xl font-bold text-purple-800 font-poppins">{Math.round(avgAttendance)}%</div>
+              <div className="text-sm text-purple-600 font-poppins">Avg Attendance</div>
             </div>
           </div>
         </div>
@@ -481,8 +481,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <PieChart className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900">Department Matrix</h3>
-                <p className="text-slate-600">Performance & headcount analysis</p>
+                <h3 className="text-xl font-bold text-slate-900 font-poppins">Department Matrix</h3>
+                <p className="text-slate-600 font-poppins">Performance & headcount analysis</p>
               </div>
             </div>
             <button 
@@ -503,19 +503,19 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                       <Building className="h-5 w-5" style={{ color: getDepartmentColor(index) }} />
                     </div>
                     <div>
-                      <div className="font-semibold text-slate-900">{dept.label}</div>
-                      <div className="text-sm text-slate-600">{dept.value} employees</div>
+                      <div className="font-semibold text-slate-900 font-poppins">{dept.label}</div>
+                      <div className="text-sm text-slate-600 font-poppins">{dept.value} employees</div>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-6">
                     <div className="text-center">
-                      <div className="text-lg font-bold text-slate-900">{dept.performance.toFixed(1)}</div>
-                      <div className="text-xs text-slate-500">Performance</div>
+                      <div className="text-lg font-bold text-slate-900 font-poppins">{dept.performance.toFixed(1)}</div>
+                      <div className="text-xs text-slate-500 font-poppins">Performance</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-slate-900">${Math.round(dept.salary / 1000)}K</div>
-                      <div className="text-xs text-slate-500">Avg Salary</div>
+                      <div className="text-lg font-bold text-slate-900 font-poppins">${Math.round(dept.salary / 1000)}K</div>
+                      <div className="text-xs text-slate-500 font-poppins">Avg Salary</div>
                     </div>
                     <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div 
@@ -544,8 +544,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <Award className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-emerald-900">Top Performers</h3>
-                <p className="text-emerald-600">Excellence recognition</p>
+                <h3 className="text-xl font-bold text-emerald-900 font-poppins">Top Performers</h3>
+                <p className="text-emerald-600 font-poppins">Excellence recognition</p>
               </div>
             </div>
           </div>
@@ -564,15 +564,15 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-900 truncate">{employee.name}</div>
-                  <div className="text-sm text-emerald-600 truncate">{employee.department}</div>
+                  <div className="font-semibold text-slate-900 truncate font-poppins">{employee.name}</div>
+                  <div className="text-sm text-emerald-600 truncate font-poppins">{employee.department}</div>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center space-x-1">
                     <Star className="h-4 w-4 text-emerald-600 fill-current" />
-                    <span className="text-lg font-bold text-emerald-800">{employee.performanceRating.toFixed(1)}</span>
+                    <span className="text-lg font-bold text-emerald-800 font-poppins">{employee.performanceRating.toFixed(1)}</span>
                   </div>
-                  <div className="text-xs text-emerald-500">{employee.attendanceRate}% attendance</div>
+                  <div className="text-xs text-emerald-500 font-poppins">{employee.attendanceRate}% attendance</div>
                 </div>
               </div>
             ))}
@@ -587,8 +587,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <Zap className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-blue-900">New Talent</h3>
-                <p className="text-blue-600">Recent additions</p>
+                <h3 className="text-xl font-bold text-blue-900 font-poppins">New Talent</h3>
+                <p className="text-blue-600 font-poppins">Recent additions</p>
               </div>
             </div>
           </div>
@@ -607,14 +607,14 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-900 truncate">{employee.name}</div>
-                  <div className="text-sm text-blue-600 truncate">{employee.role}</div>
+                  <div className="font-semibold text-slate-900 truncate font-poppins">{employee.name}</div>
+                  <div className="text-sm text-blue-600 truncate font-poppins">{employee.role}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-medium text-blue-700">
+                  <div className="text-sm font-medium text-blue-700 font-poppins">
                     {new Date(employee.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
-                  <div className="text-xs text-blue-500">{employee.department}</div>
+                  <div className="text-xs text-blue-500 font-poppins">{employee.department}</div>
                 </div>
               </div>
             ))}
@@ -629,8 +629,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <Settings className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-purple-900">Quick Actions</h3>
-                <p className="text-purple-600">Essential operations</p>
+                <h3 className="text-xl font-bold text-purple-900 font-poppins">Quick Actions</h3>
+                <p className="text-purple-600 font-poppins">Essential operations</p>
               </div>
             </div>
           </div>
@@ -695,8 +695,8 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
               <Bell className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-slate-900">System Alerts</h3>
-              <p className="text-slate-600">Important notifications and updates</p>
+              <h3 className="text-2xl font-bold text-slate-900 font-poppins">System Alerts</h3>
+              <p className="text-slate-600 font-poppins">Important notifications and updates</p>
             </div>
           </div>
           <button 
@@ -716,11 +716,11 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <Target className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-amber-800 mb-2">Performance Reviews Due</h4>
-                <p className="text-sm text-amber-700 mb-3">4 employees need performance reviews this week</p>
+                <h4 className="font-bold text-amber-800 mb-2 font-poppins">Performance Reviews Due</h4>
+                <p className="text-sm text-amber-700 mb-3 font-poppins">4 employees need performance reviews this week</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-amber-600 font-medium">High Priority</span>
-                  <button className="text-xs bg-amber-200 text-amber-800 px-3 py-1 rounded-full hover:bg-amber-300 transition-colors">
+                  <span className="text-xs text-amber-600 font-medium font-poppins">High Priority</span>
+                  <button className="text-xs bg-amber-200 text-amber-800 px-3 py-1 rounded-full hover:bg-amber-300 transition-colors font-poppins">
                     Review Now
                   </button>
                 </div>
@@ -735,11 +735,11 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <Briefcase className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-blue-800 mb-2">Active Recruitment</h4>
-                <p className="text-sm text-blue-700 mb-3">{mockRecruitmentData.length} positions currently being recruited</p>
+                <h4 className="font-bold text-blue-800 mb-2 font-poppins">Active Recruitment</h4>
+                <p className="text-sm text-blue-700 mb-3 font-poppins">{mockRecruitmentData.length} positions currently being recruited</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-blue-600 font-medium">In Progress</span>
-                  <button className="text-xs bg-blue-200 text-blue-800 px-3 py-1 rounded-full hover:bg-blue-300 transition-colors">
+                  <span className="text-xs text-blue-600 font-medium font-poppins">In Progress</span>
+                  <button className="text-xs bg-blue-200 text-blue-800 px-3 py-1 rounded-full hover:bg-blue-300 transition-colors font-poppins">
                     View Jobs
                   </button>
                 </div>
@@ -754,11 +754,11 @@ const Overview: React.FC<OverviewProps> = ({ setActiveSection }) => {
                 <GraduationCap className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold text-emerald-800 mb-2">Training Progress</h4>
-                <p className="text-sm text-emerald-700 mb-3">{mockTrainingData.length} active training programs running</p>
+                <h4 className="font-bold text-emerald-800 mb-2 font-poppins">Training Progress</h4>
+                <p className="text-sm text-emerald-700 mb-3 font-poppins">{mockTrainingData.length} active training programs running</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-emerald-600 font-medium">On Track</span>
-                  <button className="text-xs bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full hover:bg-emerald-300 transition-colors">
+                  <span className="text-xs text-emerald-600 font-medium font-poppins">On Track</span>
+                  <button className="text-xs bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full hover:bg-emerald-300 transition-colors font-poppins">
                     View Progress
                   </button>
                 </div>
