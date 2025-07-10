@@ -14,7 +14,8 @@ import {
   HelpCircle,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Settings
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -33,7 +34,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
     { id: 'payroll', label: 'Payroll', icon: DollarSign },
     { id: 'recruitment', label: 'Recruitment', icon: UserPlus },
     { id: 'training', label: 'Training', icon: BookOpen },
-    { id: 'notifications', label: 'Notifications', icon: Bell }
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
   return (

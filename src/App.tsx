@@ -10,6 +10,7 @@ import Payroll from './components/Dashboard/Payroll';
 import Recruitment from './components/Dashboard/Recruitment';
 import Training from './components/Dashboard/Training';
 import Notifications from './components/Dashboard/Notifications';
+import Settings from './components/Dashboard/Settings';
 
 function App() {
   const [activeSection, setActiveSection] = useState('overview');
@@ -33,8 +34,10 @@ function App() {
         return <Training />;
       case 'notifications':
         return <Notifications />;
+      case 'settings':
+        return <Settings />;
       default:
-        return <Overview />;
+        return <Overview setActiveSection={setActiveSection} />;
     }
   };
 
