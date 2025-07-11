@@ -58,17 +58,26 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between w-full">
               {isOpen ? (
-                <div>
-                  <h1 className="text-lg lg:text-xl xl:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                    HR Dashboard
-                  </h1>
-                  <p className="text-gray-500 text-xs lg:text-sm mt-1 font-medium">Management System</p>
+                <div className="flex items-center space-x-3">
+                  <img
+                    src="/Light Brown and Green Elegant Corporate Logo.png"
+                    alt="Company Logo"
+                    className="w-10 h-10 lg:w-12 lg:h-12 object-contain flex-shrink-0"
+                  />
+                  <div>
+                    <h1 className="text-lg lg:text-xl xl:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                      HR Dashboard
+                    </h1>
+                    <p className="text-gray-500 text-xs lg:text-sm mt-1 font-medium">Management System</p>
+                  </div>
                 </div>
               ) : (
                 <div className="w-full flex justify-center">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">HR</span>
-                  </div>
+                  <img
+                    src="/Light Brown and Green Elegant Corporate Logo.png"
+                    alt="Company Logo"
+                    className="w-8 h-8 object-contain"
+                  />
                 </div>
               )}
               
